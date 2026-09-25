@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Ransz Tools</title>
+  <style>
+    /* =========================================
+       PERBAIKAN TATA LETAK (RESPONSIVE FIX)
+       ========================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ios-blur: blur(40px); --ios-bg: rgba(255, 255, 255, 0.25); --ios-border: rgba(255, 255, 255, 0.4); --text-main: #1d1d1f; --text-sub: #515154; --accent: #0071e3; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; background: radial-gradient(circle at 15% 50%, #d5e3ff, #f3e7ff, #e3f2ff); min-height: 100vh; color: var(--text-main); -webkit-font-smoothing: antialiased; overflow-x: hidden; width: 100%; }
+
+    /* Navbar */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255, 255, 255, 0.15); backdrop-filter: var(--ios-blur); -webkit-backdrop-filter: var(--ios-blur); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 1000; border-bottom: 0.5px solid var(--ios-border); width: 100%; }
+    @keyframes float-code { 0% { transform: translateY(0px); } 50% { transform: translateY(-3px); } 100% { transform: translateY(0px); } }
+    .nav-brand { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.5px; }
+    .nav-code-icon { width: 20px; height: 20px; color: var(--accent); animation: float-code 2.5s ease-in-out infinite; }
+    .menu-icon { cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
+
+    /* Sidebar */
+    .side-menu { position: fixed; top: 0; right: -280px; width: 240px; height: 100vh; background: rgba(245, 245, 247, 0.85); backdrop-filter: var(--ios-blur); -webkit-backdrop-filter: var(--ios-blur); box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05); transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 999; padding-top: 85px; border-left: 0.5px solid var(--ios-border); }
+    .side-menu.open { right: 0; }
+    .menu-item { padding: 16px 24px; font-size: 14px; font-weight: 500; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid rgba(0, 0, 0, 0.05); transition: background 0.2s; }
+    .menu-item:active { background: rgba(0, 0, 0, 0.05); }
+    .menu-item svg { width: 18px; height: 18px; stroke-width: 2; }
+
+    /* Responsive Card Utama */
+    .main-container { padding: 90px 15px 40px 15px; display: flex; justify-content: center; align-items: flex-start; width: 100%; min-height: 100vh; }
+    .glass-card { background: var(--ios-bg); backdrop-filter: var(--ios-blur); -webkit-backdrop-filter: var(--ios-blur); border: 0.5px solid var(--ios-border); border-radius: 28px; padding: 30px 20px; width: 100%; max-width: 480px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6); text-align: center; margin: 0 auto; }
+
+    @media (max-width: 380px) { .main-container { padding: 80px 10px 30px 10px; } .glass-card { padding: 25px 15px; border-radius: 24px; } }
+
+    @keyframes smoothFade { 0% { opacity: 0; transform: translateY(15px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    #view-home, #view-tool, #view-review, #step-1, #step-2, #step-loading, #step-success { animation: smoothFade 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+    .welcome-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; }
+    .features-box { background: rgba(255, 255, 255, 0.4); border-radius: 16px; padding: 15px; text-align: left; margin-bottom: 18px; border: 0.5px solid rgba(255, 255, 255, 0.5); }
+    .features-title { font-weight: 600; font-size: 14px; margin-bottom: 10px; }
+    .features-list { padding-left: 20px; font-size: 13px; line-height: 1.5; color: var(--text-sub); }
+    .features-list li { margin-bottom: 8px; padding-left: 5px; }
+    .features-list li::marker { color: var(--accent); }
+    .badge-live { display: inline-flex; align-items: center; justify-content: center; background: #e5fbe9; color: #28a745; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; margin-left: 6px; vertical-align: middle; letter-spacing: 0.5px; }
+    .maintenance-box { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; color: var(--accent); font-weight: 500; margin-bottom: 25px; padding: 10px; background: rgba(0, 113, 227, 0.08); border-radius: 12px; text-align: left; }
+    .gear-spin { animation: spin-gear 3s linear infinite; flex-shrink: 0; }
+    @keyframes spin-gear { 100% { transform: rotate(360deg); } }
+
+    .dev-intro { text-align: left; padding-top: 20px; border-top: 0.5px solid rgba(0, 0, 0, 0.1); font-size: 12.5px; color: var(--text-sub); line-height: 1.6; }
+    .dev-intro p { margin-bottom: 12px; } .dev-intro p:last-child { margin-bottom: 0; }
+
+    .watermark { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 20px; opacity: 0.9; text-transform: uppercase; }
+    p.instruction { font-size: 12px; color: var(--text-sub); margin-bottom: 10px; font-weight: 500; }
+
+    input, textarea { width: 100%; background: rgba(255, 255, 255, 0.5); border: 0.5px solid rgba(0, 0, 0, 0.1); border-radius: 14px; padding: 14px; font-size: 14px; margin-bottom: 18px; outline: none; transition: all 0.3s ease; color: var(--text-main); text-align: center; font-family: inherit; }
+    textarea { text-align: left; resize: none; height: 80px; }
+    input:focus, textarea:focus { background: rgba(255, 255, 255, 0.8); border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); }
+    button { width: 100%; background: var(--accent); color: white; border: none; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+    button:active { background: #005bb5; transform: scale(0.95); }
+    button:disabled { background: #a1a1a6; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.4); color: var(--text-main); border: 0.5px solid rgba(0, 0, 0, 0.15); margin-top: 10px; }
+    .btn-secondary:active { background: rgba(0, 0, 0, 0.05); transform: scale(0.95); }
+
+    .spinner-ios { width: 24px; height: 24px; border: 2.5px solid rgba(0, 113, 227, 0.2); border-top: 2.5px solid var(--accent); border-radius: 50%; animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin: 0 auto 12px auto; }
+    .status-text { font-size: 13px; font-weight: 500; color: var(--text-main); }
+    .success-icon-wrapper { margin-bottom: 16px; color: #34c759; }
+    .success-text { font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--text-main); }
+
+    #view-tool, #view-review, #step-2, #step-loading, #step-success { display: none; }
+    
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10000; text-align: center; max-width: 90%; word-wrap: break-word; }
+    .toast.show { opacity: 1; }
+
+    /* =========================================
+       REVIEW / KOMENTAR (MINI & AUTO MARQUEE)
+       ========================================= */
+    .star-rating { font-size: 28px; color: rgba(0,0,0,0.15); margin-bottom: 12px; cursor: pointer; display: flex; justify-content: center; gap: 4px; }
+    .star-rating span { transition: color 0.2s, transform 0.1s; }
+    .star-rating span:active { transform: scale(0.85); }
+    .star-rating span.active { color: #ffcc00; text-shadow: 0 0 10px rgba(255, 204, 0, 0.4); }
+    
+    .review-marquee-container { height: 220px; overflow: hidden; position: relative; -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent); mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent); }
+    #reviewList { display: flex; flex-direction: column; }
+    .review-marquee-container:active #reviewList, .review-marquee-container:hover #reviewList { animation-play-state: paused !important; }
+
+    @keyframes autoScrollMarquee { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+    
+    .review-card { background: rgba(255, 255, 255, 0.65); border: 0.5px solid rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 10px; margin-bottom: 8px; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .review-header-container { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .review-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .review-header-info { display: flex; flex-direction: column; flex: 1; }
+    
+    /* Layout Nama dan Badge Centang Biru */
+    .review-name-wrap { display: flex; align-items: center; gap: 4px; }
+    .review-name { font-weight: 700; font-size: 11.5px; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+    
+    .review-stars { color: #ffcc00; font-size: 10px; }
+    .review-date { font-size: 9px; color: #8e8e93; font-weight: 500; }
+    .review-text { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR ATAS -->
+  <div class="navbar">
+    <div class="nav-brand">
+      <svg class="nav-code-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+      RANSZ TOOLS
+    </div>
+    <div class="menu-icon" onclick="toggleMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </div>
+  </div>
+
+  <!-- MENU SAMPING -->
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-item" onclick="navigatePage('view-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Beranda</div>
+    <div class="menu-item" onclick="navigatePage('view-tool')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>Bypass amp + rmail</div>
+    <div class="menu-item" onclick="navigatePage('view-review');"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Live Chat & Ulasan</div>
+  </div>
+
+  <div class="main-container">
+    <div class="glass-card">
+      
+      <!-- HALAMAN 1: BERANDA -->
+      <div id="view-home">
+        <div class="welcome-title">Selamat Datang</div>
+        <div class="features-box">
+          <div class="features-title">Daftar Tools & Fitur</div>
+          <ul class="features-list">
+            <li>bypas premium alight Motion <span class="badge-live">ON</span></li>
+            <li>Generator rmail <span class="badge-live">ON</span></li>
+          </ul>
+        </div>
+        <div class="maintenance-box">
+          <svg class="gear-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Tools lainnya dalam perbaikan / pembuatan...</span>
+        </div>
+        
+        <div class="dev-intro">
+          <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 14px;">Developer</div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <div style="font-size: 18px;">👋</div><div style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">Hey, I'm Ransz</div>
+          </div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-sub); margin-bottom: 18px; background: rgba(0,0,0,0.05); padding: 5px 10px; border-radius: 16px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            @ranszxhiters
+          </div>
+          <p>I'm a developer who loves turning ideas into code.</p>
+          <p>Saya suka ngoding, ngulik hal-hal baru, bereksperimen, dan membangun tools yang bisa membantu orang lain. Tools ini saya rilis karena masih banyak orang yang belum tahu atau belum memahami hal-hal teknis tertentu.</p>
+          <p style="margin-bottom: 18px;">Daripada cuma menyimpan apa yang saya pelajari sendiri, saya memilih untuk membangun, membagikan, dan terus mengembangkan apa yang saya buat.</p>
+          <div style="font-weight: 700; color: var(--accent); margin-bottom: 18px; text-align: center; font-size: 12px; letter-spacing: 0.5px; background: rgba(0, 113, 227, 0.08); padding: 10px; border-radius: 12px; border: 0.5px solid rgba(0, 113, 227, 0.2);">Learn → Build → Share → Improve</div>
+          <p style="margin-bottom: 6px;">Bukan tentang menjadi developer yang paling hebat.</p>
+          <p>Tapi tentang terus belajar, membuat sesuatu, dan membagikannya agar bisa berguna untuk orang lain. 🚀</p>
+        </div>
+      </div>
+
+      <!-- HALAMAN 2: TOOLS AM PREMIUM -->
+      <div id="view-tool">
+        <div class="watermark">AM AUTO PREMIUM </div>
+        <div id="step-1">
+          <p class="instruction">Masukkan Gmail yang belum didaftarkan Alight Motion</p>
+          <input type="email" id="email" placeholder="Contoh: veiransz@ransz.com" autocomplete="off" spellcheck="false">
+          <button onclick="prosesKirimLink()">Kirim Link</button>
+        </div>
+        <div id="step-2">
+          <p class="instruction" style="color: #ff3b30;">Periksa Inbox email kamu di bawah</p>
+          <p class="instruction">Tempel link login yang terkirim di sini:</p>
+          <input type="text" id="rawLink" placeholder="Tempel link login di sini" autocomplete="off" spellcheck="false">
+          <button onclick="prosesVerifikasi()">Verifikasi Premium</button>
+          <button class="btn-secondary" onclick="kembaliKeMenuAwal()">Kembali ke Menu Awal</button>
+        </div>
+        <div id="step-loading"><div class="spinner-ios"></div><p class="status-text" id="loading-text">Memproses...</p></div>
+        <div id="step-success">
+          <div class="success-icon-wrapper"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+          <p class="success-text">Alight Motion kamu telah diverifikasi premium.<br><br>Silakan login menggunakan email tersebut.</p>
+        </div>
+        <!-- INTEGRASI RMAIL -->
+        <div id="rmail-section" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1);">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); margin-bottom: 15px; text-align: center; line-height: 1.5; letter-spacing: -0.3px;">GAADA GMAIL? MAGER BIKIN?<br>GENERATE DI SINI SEKALIAN 👇</div>
+          <p class="instruction">Alamat Email Sementara Kamu</p>
+          <div id="emailBox" style="background: rgba(255, 255, 255, 0.5); border: 0.5px solid rgba(0, 0, 0, 0.1); border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 600; word-break: break-all; margin-bottom: 8px;">Belum ada email</div>
+          <div id="expire" style="font-size: 11px; color: #ff3b30; font-weight: 500; min-height: 16px; margin-bottom: 14px;"></div>
+          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <button onclick="generateEmail()" style="flex: 1; padding: 12px; font-size: 13px;">✦ Generate</button>
+            <button class="btn-secondary" onclick="copyEmail()" style="flex: 1; margin-top: 0; padding: 12px; font-size: 13px;">Salin Email</button>
+          </div>
+          <div class="features-box" style="text-align: center; padding: 12px; margin-bottom: 0;">
+            <div class="features-title" style="margin-bottom: 5px;">Kotak Masuk (Inbox)</div>
+            <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 10px;">Pesan dari Alight Motion akan masuk ke sini</div>
+            <div id="statusText" style="font-size: 12px; font-weight: 500; color: var(--text-sub); margin-bottom: 10px;">Belum ada inbox</div>
+            <button class="btn-secondary" onclick="refreshInbox()" style="margin-top: 0; margin-bottom: 14px; padding: 10px; font-size: 13px;">↻ Refresh Inbox</button>
+            <div id="messages" style="text-align: left;"><div style="text-align: center; font-size: 12px; color: var(--text-sub); padding: 10px;">Belum ada pesan masuk.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HALAMAN 3: LIVE CHAT & KOMENTAR (KECIL & MUTER OTOMATIS) -->
+      <div id="view-review">
+        <div class="watermark" style="margin-bottom: 15px;">LIVE CHAT & ULASAN</div>
+        <p class="instruction" style="margin-bottom: 20px;">Ngobrol bareng atau kasih rating buat tools ini!</p>
+
+        <!-- KOTAK ANIMASI MARQUEE KOMENTAR -->
+        <div class="features-box" style="padding: 10px; margin-bottom: 20px;">
+          <div class="features-title" style="margin-bottom: 10px; color: var(--accent); font-size: 14px; padding-left: 5px; text-align: center;">Komentar Terbaru</div>
+          
+          <div class="review-marquee-container" id="marqueeBox">
+            <div id="reviewList">
+               <div style="text-align: center; font-size: 12px; color: var(--text-sub); padding: 10px;">Memuat ulasan dari server...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORM PENGISIAN KOMENTAR -->
+        <div class="features-box" style="text-align: center; padding: 20px 15px;">
+          <div class="features-title" style="margin-bottom: 10px; font-size: 14px;">Tulis Komentar Kamu</div>
+          <div class="star-rating" id="starRating">
+            <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
+          </div>
+          <input type="text" id="revName" placeholder="Nama Panggilan (Wajib)" style="margin-bottom: 12px; padding: 14px; font-size: 13.5px; text-align: left;" autocomplete="off">
+          <textarea id="revText" placeholder="Komentar, pesan, atau saran..." style="margin-bottom: 14px; padding: 14px; font-size: 13.5px;"></textarea>
+          <button onclick="submitReview()" style="padding: 14px; font-size: 14px;">Kirim Komentar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- SCRIPT FUNGSI UMUM, AM GEN, DAN RMAIL -->
+  <script>
+    window.showToast = function(text){ const toast = document.getElementById("toast"); toast.textContent = text; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 3000); }
+    let isMenuOpen = false;
+    function toggleMenu() { const menu = document.getElementById('sideMenu'); isMenuOpen = !isMenuOpen; if(isMenuOpen) { menu.classList.add('open'); } else { menu.classList.remove('open'); } }
+    function navigatePage(pageId) { document.getElementById('view-home').style.display = 'none'; document.getElementById('view-tool').style.display = 'none'; document.getElementById('view-review').style.display = 'none'; document.getElementById(pageId).style.display = 'block'; toggleMenu(); }
+    function kembaliKeMenuAwal() { showStep('step-1'); navigatePage('view-home'); }
+
+    const API_URL = 'https://anita-studio.netlify.app/.netlify/functions/amprem';
+    async function postData(action, data) { const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...data }) }); return await response.json(); }
+    function showStep(stepId) { document.getElementById('step-1').style.display = 'none'; document.getElementById('step-2').style.display = 'none'; document.getElementById('step-loading').style.display = 'none'; document.getElementById('step-success').style.display = 'none'; const el = document.getElementById(stepId); el.style.display = 'none'; setTimeout(() => el.style.display = 'block', 10); }
+    function updateStatus(text) { document.getElementById('loading-text').innerText = text; }
+
+    async function prosesKirimLink() { const email = document.getElementById('email').value.trim(); if (!email) return window.showToast('Mohon isi Email terlebih dahulu.'); showStep('step-loading'); updateStatus('Mengirim link ke email...'); try { const magicLink = await postData('send-magiclink', { email }); if (magicLink.success) { setTimeout(() => { showStep('step-2'); window.showToast("Link terkirim! Scroll ke bawah cek inbox."); }, 1000); } else { throw new Error(magicLink.message || 'Gagal mengirim magic link'); } } catch (error) { window.showToast("Terjadi kesalahan: " + error.message); showStep('step-1'); } }
+    async function prosesVerifikasi() { const email = document.getElementById('email').value.trim(); const rawLink = document.getElementById('rawLink').value.trim(); if (!rawLink) return window.showToast('Mohon tempel link dari email kamu.'); showStep('step-loading'); updateStatus('Memverifikasi tautan...'); try { const verification = await postData('verify-account', { email, rawLink }); if (!verification.success) throw new Error(verification.message || 'Verifikasi gagal. Pastikan link sudah benar.'); updateStatus('Menerapkan status Premium...'); const idToken = verification.idToken || verification.profile?.idToken; if (!idToken) throw new Error('Sistem gagal mendapatkan token.'); const premium = await postData('apply-premium', { email, idToken }); if (!premium.success) throw new Error(premium.message || 'Gagal menerapkan premium.'); setTimeout(() => { showStep('step-success'); }, 1200); } catch (error) { window.showToast("Terjadi kesalahan: " + error.message); showStep('step-2'); } }
+
+    const WORKER_URL = "https://rmailapy.randi9756.workers.dev";
+    let currentEmail = "", currentToken = "", expiresAt = 0, refreshTimer = null, expireTimer = null; const STORAGE_KEY = "rmail_saved_accounts";
+    function getSavedAccounts(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; } }
+    function saveAccounts(accounts){ localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts)); }
+    function saveAccount(email, token, expires){ if(!email || !token) return; let accounts = getSavedAccounts(); accounts = accounts.filter(item => item.email !== email); accounts.unshift({ email: email, token: token, expiresAt: Number(expires || 0), savedAt: Date.now() }); accounts = accounts.slice(0, 20); saveAccounts(accounts); }
+    function setRMailStatus(text, type=""){ const statusText = document.getElementById("statusText"); statusText.textContent = text; if(type === "error") statusText.style.color = "#ff3b30"; else if(type === "ok") statusText.style.color = "#34c759"; else statusText.style.color = "var(--text-sub)"; }
+
+    async function generateEmail(){ setRMailStatus("Membuat email..."); try { const response = await fetch(`${WORKER_URL}/generate`, { method:"POST" }); const data = await response.json(); if(!response.ok) throw new Error(data.error || "Gagal membuat email"); currentEmail = data.address || data.email || ""; currentToken = data.token || data.sessionToken || data.id || ""; expiresAt = Number(data.expiresAt || data.expires_at || 0); if(!currentEmail || !currentToken) throw new Error("Gagal mengambil data dari Worker."); saveAccount(currentEmail, currentToken, expiresAt); localStorage.setItem("rmail_email", currentEmail); localStorage.setItem("rmail_token", currentToken); localStorage.setItem("rmail_expires", String(expiresAt)); document.getElementById("emailBox").textContent = currentEmail; updateExpire(); setRMailStatus("Email berhasil dibuat.", "ok"); window.showToast("Email berhasil dibuat!"); await refreshInbox(); } catch(error) { setRMailStatus(error.message, "error"); } }
+    async function refreshInbox(){ if(!currentToken){ setRMailStatus("Belum ada token inbox.", "error"); return; } setRMailStatus("Memeriksa inbox..."); try { const response = await fetch(`${WORKER_URL}/inbox?token=${encodeURIComponent(currentToken)}`); const data = await response.json(); if(!response.ok) throw new Error(data.error || "Invalid / token expired"); let messages = Array.isArray(data) ? data : (data.messages || data.data || data.items || []); renderMessages(messages); setRMailStatus(`${messages.length} pesan ditemukan`, "ok"); } catch(error) { setRMailStatus(error.message, "error"); } }
+    function sanitizeEmailHTML(html){ const template = document.createElement("template"); template.innerHTML = String(html || ""); template.content.querySelectorAll("script,iframe,object,embed,form,meta,base,link").forEach(el => el.remove()); template.content.querySelectorAll("*").forEach(el => { [...el.attributes].forEach(attr => { if(attr.name.toLowerCase().startsWith("on")) el.removeAttribute(attr.name); }); ["href","src","action"].forEach(name => { if(el.hasAttribute(name)){ const val = el.getAttribute(name).trim(); if(/^javascript:/i.test(val) || /^data:text\/html/i.test(val)) el.removeAttribute(name); } }); }); return template.innerHTML; }
+    function textToLinkHTML(text){ const escaped = String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); return escaped.replace(/(https?:\/\/[^\s<>"']+)/gi, match => { let url = match, trailing=""; while(/[.,!?;:)]+$/.test(url)){ trailing = url.slice(-1) + trailing; url = url.slice(0,-1); } return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); font-weight: bold;">${url}</a>${trailing}`; }); }
+    function getHTMLBody(msg){ return (msg.bodyHtml || msg.bodyHTML || msg.htmlBody || msg.html || msg.body?.html || msg.content?.html || ""); }
+    function getTextBody(msg){ return (msg.bodyText || msg.text || msg.body?.text || msg.body || msg.content?.text || "(Pesan kosong)"); }
+    function addCopyButtonsToLinks(container){ const links = Array.from(container.querySelectorAll("a")); links.forEach(link => { const href = link.getAttribute("href"); if(!href || /^javascript:/i.test(href) || /^data:/i.test(href)) return; if(link.parentElement && link.parentElement.classList.contains("email-link-wrap")) return; link.target = "_blank"; link.rel = "noopener noreferrer"; link.style.color = "var(--accent)"; link.style.fontWeight = "bold"; const wrapper = document.createElement("span"); wrapper.className = "email-link-wrap"; wrapper.style.display = "inline-flex"; wrapper.style.alignItems = "center"; wrapper.style.gap = "6px"; wrapper.style.margin = "4px 0"; const button = document.createElement("button"); button.type = "button"; button.textContent = "Salin"; button.style.cssText = "padding: 4px 8px; font-size: 9px; border-radius: 6px; width: auto; background: rgba(0, 113, 227, 0.15); color: var(--accent);"; button.addEventListener("click", async function(e){ e.preventDefault(); e.stopPropagation(); try { await navigator.clipboard.writeText(href); button.textContent = "Tersalin"; window.showToast("Link disalin"); setTimeout(() => { button.textContent = "Salin"; }, 1500); } catch { window.showToast("Gagal menyalin"); } }); const parent = link.parentNode; if(!parent) return; parent.insertBefore(wrapper, link); wrapper.appendChild(link); wrapper.appendChild(button); }); }
+    function renderMessages(messages){ const container = document.getElementById("messages"); if(!messages || !messages.length){ container.innerHTML = `<div style="text-align: center; font-size: 12px; color: var(--text-sub); padding: 10px;">Belum ada pesan masuk.</div>`; return; } container.innerHTML = ""; messages.forEach(msg => { const article = document.createElement("article"); article.style.cssText = "background: rgba(255, 255, 255, 0.7); border: 0.5px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 12px; margin-bottom: 10px;"; const subject = document.createElement("div"); subject.textContent = msg.subject || msg.title || "(Tanpa subjek)"; subject.style.cssText = "font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;"; const from = document.createElement("div"); from.textContent = "Dari: " + (msg.from || msg.sender || msg.fromEmail || "-"); from.style.cssText = "font-size: 10px; color: var(--text-sub); margin-bottom: 10px; word-break: break-all;"; const body = document.createElement("div"); body.style.cssText = "font-size: 12px; color: var(--text-main); line-height: 1.5; word-break: break-word;"; const html = getHTMLBody(msg); if(html) body.innerHTML = sanitizeEmailHTML(html); else body.innerHTML = textToLinkHTML(getTextBody(msg)); addCopyButtonsToLinks(body); article.appendChild(subject); article.appendChild(from); article.appendChild(body); container.appendChild(article); }); }
+    async function copyEmail(){ if(!currentEmail) return window.showToast("Belum ada email yang di-generate"); try { await navigator.clipboard.writeText(currentEmail); window.showToast("Email berhasil disalin"); } catch { window.showToast("Gagal menyalin email"); } }
+    function updateExpire(){ if(expireTimer) clearInterval(expireTimer); const el = document.getElementById("expire"); if(!expiresAt){ el.textContent = ""; return; } function update(){ const remaining = expiresAt - Date.now(); if(remaining <= 0){ el.textContent = "Email sudah kedaluwarsa."; clearInterval(expireTimer); return; } const minutes = Math.floor(remaining / 60000); const seconds = Math.floor((remaining % 60000) / 1000); el.textContent = `Expired dalam: ${minutes}m ${seconds}s`; } update(); expireTimer = setInterval(update, 1000); }
+    function startAutoRefresh(){ if(refreshTimer) clearInterval(refreshTimer); refreshTimer = setInterval(() => { if(currentToken) refreshInbox(); }, 10000); }
+    function loadSavedSession(){ currentEmail = localStorage.getItem("rmail_email") || ""; currentToken = localStorage.getItem("rmail_token") || ""; expiresAt = Number(localStorage.getItem("rmail_expires") || 0); if(currentEmail){ document.getElementById("emailBox").textContent = currentEmail; updateExpire(); if(currentToken) refreshInbox(); } startAutoRefresh(); } loadSavedSession();
+
+    // Logika Bintang Rating
+    window.currentRating = 0;
+    const stars = document.querySelectorAll('.star-rating span');
+    stars.forEach(star => {
+      star.addEventListener('click', function() {
+        window.currentRating = parseInt(this.getAttribute('data-val'));
+        stars.forEach(s => { if(parseInt(s.getAttribute('data-val')) <= window.currentRating) { s.classList.add('active'); } else { s.classList.remove('active'); } });
+      });
+    });
+  </script>
+
+  <!-- ==========================================
+       SCRIPT FIREBASE (ULASAN & KOMENTAR & CENTANG BIRU ASLI)
+       ========================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbmC5SEqU6Aki7en4xcpFiAP3UQVQEz6k",
+      authDomain: "mail-temp-a6f66.firebaseapp.com",
+      projectId: "mail-temp-a6f66",
+      storageBucket: "mail-temp-a6f66.firebasestorage.app",
+      messagingSenderId: "370032574666",
+      appId: "1:370032574666:web:ad1a89bff2c4335c123433"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const q = query(collection(db, "ulasan"), orderBy("timestamp", "desc"), limit(50));
+    
+    onSnapshot(q, (snapshot) => {
+      const list = document.getElementById('reviewList');
+      
+      if (snapshot.empty) {
+        list.innerHTML = '<div style="text-align: center; font-size: 12px; color: var(--text-sub); padding: 10px;">Belum ada obrolan atau ulasan. Jadilah yang pertama!</div>';
+        list.style.animation = "none";
+        return;
+      }
+
+      let html = "";
+      snapshot.forEach((doc) => {
+        const r = doc.data();
+        const starHTML = "★".repeat(r.rating || 5) + "☆".repeat(5 - (r.rating || 5));
+        
+        let dateStr = "Baru saja";
+        if (r.timestamp) {
+           const d = r.timestamp.toDate();
+           const tgl = d.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+           const jam = d.toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+           dateStr = `${tgl}, ${jam}`;
+        }
+
+        const safeName = encodeURIComponent(r.name || "User");
+        const avatarUrl = `https://ui-avatars.com/api/?name=${safeName}&background=random&color=fff&rounded=true&bold=true&size=100`;
+
+        // INI DIA! Kode SVG Lencana Centang Biru Asli (Verified Badge ala Meta/Instagram/TikTok)
+                const authenticVerifiedBadge = `
+          <svg viewBox="0 0 24 24" fill="#0095F6" width="14" height="14" style="margin-left: -3px; vertical-align: -1px; flex-shrink: 0;">
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L5.6 12.2l1.4-1.4 3.1 3.1 7-7 1.4 1.4-8.4 8.4z"/>
+          </svg>
+        `;
+
+        // Cek status verified dari database, kalau true, tempelin SVG di sebelah nama
+        const displayName = r.isVerified ? `${r.name} ${authenticVerifiedBadge}` : r.name;
+
+        html += `
+          <div class="review-card">
+            <div class="review-header-container">
+              <img src="${avatarUrl}" class="review-avatar" alt="Foto Profil">
+              <div class="review-header-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="review-name-wrap"><div class="review-name">${displayName}</div></div>
+                  <div class="review-stars">${starHTML}</div>
+                </div>
+                <div class="review-date">${dateStr}</div>
+              </div>
+            </div>
+            <div class="review-text">${r.text}</div>
+          </div>
+        `;
+      });
+      
+      list.innerHTML = html + html; 
+      const jumlahItem = snapshot.size;
+      const speed = jumlahItem * 4; 
+      list.style.animation = `autoScrollMarquee ${speed}s linear infinite`;
+
+    }, (error) => {
+      console.error("Error mengambil ulasan: ", error);
+      if (error.code === 'permission-denied') {
+         document.getElementById('reviewList').innerHTML = '<div style="text-align: center; font-size: 13px; color: #ff3b30; padding: 10px;">Database sedang dikunci. Buka Firebase dan ubah Rules Firestore jadi True.</div>';
+      }
+    });
+
+    // FUNGSI MENGIRIM KOMENTAR
+    window.submitReview = async function() {
+      const rawName = document.getElementById('revName').value.trim();
+      const text = document.getElementById('revText').value.trim();
+      const rating = window.currentRating;
+      
+      if(!rawName || !text || rating === 0) {
+        window.showToast("Harap isi nama, ulasan, dan pilih bintang rating ya!");
+        return;
+      }
+
+      // -----------------------------------------------------
+      // DETEKSI KODE RAHASIA UNTUK CENTANG BIRU (ANTI HURUF BESAR/KECIL)
+      // -----------------------------------------------------
+      let isVerified = false;
+      let finalName = rawName;
+
+      // Pakai regex /#bos/i biar dia kebal huruf besar atau kecil (misal: #BOS, #bos, #Bos tetep tembus)
+      if (/#bos/i.test(rawName)) {
+        isVerified = true;
+        // Hapus tulisan "#bos" dari nama biar gak diliat pengguna lain
+        finalName = rawName.replace(/#bos/ig, '').trim(); 
+      }
+      // -----------------------------------------------------
+
+      const btn = document.querySelector('button[onclick="submitReview()"]');
+      const originalText = btn.innerText;
+      btn.innerText = "Mengirim Data...";
+      btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, "ulasan"), { 
+          name: finalName, 
+          text: text, 
+          rating: rating, 
+          isVerified: isVerified, // Simpan status verified ke database
+          timestamp: serverTimestamp() 
+        });
+
+        document.getElementById('revName').value = ""; document.getElementById('revText').value = ""; window.currentRating = 0;
+        document.querySelectorAll('.star-rating span').forEach(s => s.classList.remove('active'));
+        
+        window.showToast("Komentar berhasil dikirim! 🔥");
+      } catch (error) {
+        console.error("Error menambah ulasan: ", error);
+        window.showToast("Gagal! Pastikan keamanan Database dimatikan (Test Mode).");
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
